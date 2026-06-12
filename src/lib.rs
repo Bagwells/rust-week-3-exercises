@@ -147,7 +147,7 @@ impl OutPoint {
         }
         let txid = Txid(bytes[..32].try_into().unwrap());
         let vout = u32::from_le_bytes(bytes[32..36].try_into().unwrap());
-        Ok((OutPoint { txid, vout }, 36))
+        Ok((OutPoint { txid, vout }, bytes.len()))
     }
 }
 
