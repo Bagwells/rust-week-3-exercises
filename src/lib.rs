@@ -92,7 +92,6 @@ impl CompactSize {
                 ]);
                 Ok((CompactSize { value }, 9))
             }
-
         }
     }
 }
