@@ -64,26 +64,35 @@ impl CompactSize {
                     return Err(BitcoinError::InsufficientBytes);
                 }
                 let value = u16::from_le_bytes([bytes[1], bytes[2]]);
-                Ok((CompactSize { value: value as u64 }, 3))
+                Ok((
+                    CompactSize {
+                        value: value as u64,
+                    },
+                    3,
+                ))
             }
             0xFE => {
                 if bytes.len() < 5 {
                     return Err(BitcoinError::InsufficientBytes);
                 }
                 let value = u32::from_le_bytes([bytes[1], bytes[2], bytes[3], bytes[4]]);
-                Ok((CompactSize { value: value as u64 }, 5))
+                Ok((
+                    CompactSize {
+                        value: value as u64,
+                    },
+                    5,
+                ))
             }
             0xFF => {
                 if bytes.len() < 9 {
                     return Err(BitcoinError::InsufficientBytes);
                 }
                 let value = u64::from_le_bytes([
-                    bytes[1], bytes[2], bytes[3], bytes[4],
-                    bytes[5], bytes[6], bytes[7], bytes[8],
+                    bytes[1], bytes[2], bytes[3], bytes[4], bytes[5], bytes[6], bytes[7], bytes[8],
                 ]);
                 Ok((CompactSize { value }, 9))
             }
-            _ => Err(BitcoinError::InvalidFormat),
+
         }
     }
 }
@@ -127,7 +136,7 @@ impl OutPoint {
     pub fn new(txid: [u8; 32], vout: u32) -> Self {
         // TODO: Create an OutPoint from raw txid bytes and output index
         OutPoint {
-            txid: Txid(txid.try_into().unwrap()),
+            txid: Txid(txid),
             vout: vout,
         }
     }
@@ -147,7 +156,7 @@ impl OutPoint {
         }
         let txid = Txid(bytes[..32].try_into().unwrap());
         let vout = u32::from_le_bytes(bytes[32..36].try_into().unwrap());
-        Ok((OutPoint { txid, vout }, bytes.len()))
+        Ok((OutPoint { txid, vout }, 36))
     }
 }
 
@@ -232,7 +241,14 @@ impl TransactionInput {
             return Err(BitcoinError::InsufficientBytes);
         }
         let sequence = u32::from_le_bytes(bytes[consumed..consumed + 4].try_into().unwrap());
-        Ok((TransactionInput { previous_output, script_sig, sequence }, consumed + 4))
+        Ok((
+            TransactionInput {
+                previous_output,
+                script_sig,
+                sequence,
+            },
+            consumed + 4,
+        ))
     }
 }
 
@@ -300,12 +316,17 @@ impl BitcoinTransaction {
     }
 }
 
-
 impl fmt::Display for BitcoinTransaction {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-         // TODO: Format a user-friendly string showing version, inputs, lock_time
+        // TODO: Format a user-friendly string showing version, inputs, lock_time
         // Display scriptSig length and bytes, and previous output info
-        write!(f, "Version: {}\nInputs: {}\nLock Time: {}\n", self.version, self.inputs.len(), self.lock_time)?;
+        write!(
+            f,
+            "Version: {}\nInputs: {}\nLock Time: {}\n",
+            self.version,
+            self.inputs.len(),
+            self.lock_time
+        )?;
         for input in &self.inputs {
             write!(
                 f,
